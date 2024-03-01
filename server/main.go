@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"os"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 
@@ -10,7 +13,16 @@ import (
 )
 
 func main() {
-	db := db.ConnectToDB("localhost", 5432, "postgres", "password", "go_test")
+	db_host := os.Getenv("DB_HOST")
+	db_port, err := strconv.Atoi(os.Getenv("DB_PORT"))
+	if err != nil {
+		log.Fatalf("Environment variable DB_PORT is supposed to be an integer. Got: %v", os.Getenv("DB_PORT"))
+	}
+	db_user := os.Getenv("DB_USER")
+	db_password := os.Getenv("DB_PASSWORD")
+	db_name := os.Getenv("DB_NAME")
+
+	db := db.ConnectToDB(db_host, db_port, db_user, db_password, db_name)
 	defer db.Close()
 
 	router := chi.NewRouter()
@@ -34,7 +46,7 @@ func main() {
 
 	fmt.Printf("Starting server on %s\n", "localhost:4321")
 
-	err := server.ListenAndServe()
+	err = server.ListenAndServe()
 	if err == http.ErrServerClosed {
 		fmt.Println("Server shutting down")
 	}
