@@ -1,5 +1,5 @@
 build:
-	docker build -t go-rest .
+	docker build -t go-rest ./server
 
 start-server:
 	docker run -p 4321:4321 go-rest
