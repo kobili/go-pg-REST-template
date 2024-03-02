@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 
@@ -29,7 +30,7 @@ func main() {
 	})
 
 	server := http.Server{
-		Addr:    ":4321",
+		Addr:    fmt.Sprintf(":%s", os.Getenv("SERVER_PORT")),
 		Handler: router,
 	}
 
