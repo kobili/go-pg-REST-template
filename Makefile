@@ -12,5 +12,6 @@ migrate:
 	docker run -v $(shell pwd)/migrations/sql:/migrations --network host migrate/migrate -path=/migrations/ -database postgres://postgres:password@host.docker.internal:5432/go_test?sslmode=disable up
 m: migrate
 
+count ?= -all
 migrate-down:
-	docker run -v $(shell pwd)/migrations/sql:/migrations --network host migrate/migrate -path=/migrations/ -database postgres://postgres:password@host.docker.internal:5432/go_test?sslmode=disable down -all
+	docker run -v $(shell pwd)/migrations/sql:/migrations --network host migrate/migrate -path=/migrations/ -database postgres://postgres:password@host.docker.internal:5432/go_test?sslmode=disable down ${count}
