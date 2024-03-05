@@ -1,8 +1,8 @@
 build:
-	docker build -t go-rest ./server
+	docker build -t go-rest -f ./docker/dev/Dockerfile ./server
 
 start-server:
-	docker run -p 4321:4321 --name go-rest-server go-rest
+	docker run -p 4321:4321 --rm -v $(shell pwd)/server:/app go-rest
 
 make-migration:
 	migrate create -ext sql -dir ./migrations/sql -seq ${migration_name}
