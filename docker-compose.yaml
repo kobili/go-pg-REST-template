@@ -12,12 +12,18 @@ services:
       - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
       - ./pgData:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d go_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 0
     networks:
       - go-server
 
   go-app:
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     build:
       context: ./server
       dockerfile: ../docker/dev/Dockerfile
@@ -25,11 +31,10 @@ services:
       - 4321:4321
     environment:
       - DB_HOST=postgres
-      - DB_PORT=3432
+      - DB_PORT=5432
       - DB_USER=postgres
       - DB_PASSWORD=password
       - DB_NAME=go_test
-      - DB_MAX_RETRIES=10
       - SERVER_PORT=4321
     volumes:
       - ./server:/app
