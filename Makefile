@@ -5,7 +5,7 @@ start-server:
 	docker run -p 4321:4321 --rm --name go-test-rest -v $(shell pwd)/server:/app go-rest
 
 make-migration:
-	migrate create -ext sql -dir ./migrations/sql -seq ${migration_name}
+	docker run -v $(shell pwd)/migrations/sql:/migrations migrate/migrate create -ext sql -dir ./migrations -seq ${migration_name}
 mm: make-migration
 
 migrate:
