@@ -2,7 +2,7 @@ build:
 	docker build -t go-rest -f ./docker/dev/Dockerfile ./server
 
 start-server:
-	docker-compose up
+	docker compose up
 
 make-migration:
 	docker run -v $(shell pwd)/migrations/sql:/migrations migrate/migrate create -ext sql -dir ./migrations -seq ${migration_name}
