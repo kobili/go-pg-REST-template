@@ -9,9 +9,12 @@ make-migration:
 mm: make-migration
 
 migrate:
-	docker run -v $(shell pwd)/migrations/sql:/migrations --network host migrate/migrate -path=/migrations/ -database postgres://postgres:password@host.docker.internal:5432/go_test?sslmode=disable up
+	docker run -v $(shell pwd)/migrations/sql:/migrations --network host migrate/migrate -path=/migrations/ -database postgres://postgres:password@host.docker.internal:3432/go_test?sslmode=disable up
 m: migrate
 
 count ?= -all
 migrate-down:
 	docker run -v $(shell pwd)/migrations/sql:/migrations --network host migrate/migrate -path=/migrations/ -database postgres://postgres:password@host.docker.internal:5432/go_test?sslmode=disable down ${count}
+
+start-db:
+	docker run --rm -p 3432:5432 --name go-rest-postgres -v $(shell pwd)/pgData:/var/lib/postgresql/data -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=go_test -e PGDATA=/var/lib/postgresql/data/pgdata postgres:14
