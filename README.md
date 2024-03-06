@@ -18,7 +18,7 @@ make start-server
 - Server environment variables are located in the `docker-compose.yaml` file.
 
 ## Database Migrations
-Database migrations are managed by Golang-Migrate using docker containers. You may need to configure the Make scripts depending on your Docker network and Postgres configurations defined in the `docker-compose.yaml` file.
+Database migrations are managed by [Golang-Migrate](https://github.com/golang-migrate/migrate) using docker containers. You may need to configure the Make scripts depending on your Docker network and Postgres configurations defined in the `docker-compose.yaml` file.
 
 ### Creating Migrations
 ```
