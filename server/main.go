@@ -29,12 +29,14 @@ func main() {
 		r.Delete("/{userId}", DeleteUserHandler(db))
 	})
 
+	serverPort := os.Getenv("SERVER_PORT")
+
 	server := http.Server{
-		Addr:    fmt.Sprintf(":%s", os.Getenv("SERVER_PORT")),
+		Addr:    fmt.Sprintf(":%s", serverPort),
 		Handler: router,
 	}
 
-	fmt.Printf("Starting server on %s\n", "localhost:4321")
+	fmt.Printf("Starting server on localhost:%s\n", serverPort)
 
 	err := server.ListenAndServe()
 	if err == http.ErrServerClosed {

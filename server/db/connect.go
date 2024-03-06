@@ -5,17 +5,15 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+
+	"server/utils"
 )
 
 func ConnectToDB() *sql.DB {
 	host := os.Getenv("DB_HOST")
-	port, err := strconv.Atoi(os.Getenv("DB_PORT"))
-	if err != nil {
-		log.Fatalf("Environment variable DB_PORT is supposed to be an integer. Got: %v", os.Getenv("DB_PORT"))
-	}
+	port := utils.GetNumericEnv("DB_PORT")
 	user := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASSWORD")
 	dbname := os.Getenv("DB_NAME")
@@ -27,12 +25,12 @@ func ConnectToDB() *sql.DB {
 
 	db, err := sql.Open("pgx", connectionString)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("sql.Open: %v", err)
 	}
 
 	err = db.Ping()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("sql.Ping: %v", err)
 	}
 
 	return db
