@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 
@@ -10,7 +11,8 @@ import (
 )
 
 func main() {
-	db := db.ConnectToDB("localhost", 5432, "postgres", "password", "go_test")
+
+	db := db.ConnectToDB()
 	defer db.Close()
 
 	router := chi.NewRouter()
@@ -27,12 +29,14 @@ func main() {
 		r.Delete("/{userId}", DeleteUserHandler(db))
 	})
 
+	serverPort := os.Getenv("SERVER_PORT")
+
 	server := http.Server{
-		Addr:    ":4321",
+		Addr:    fmt.Sprintf(":%s", serverPort),
 		Handler: router,
 	}
 
-	fmt.Printf("Starting server on %s\n", "localhost:4321")
+	fmt.Printf("Starting server on localhost:%s\n", serverPort)
 
 	err := server.ListenAndServe()
 	if err == http.ErrServerClosed {
