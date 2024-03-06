@@ -14,7 +14,7 @@ COPY .air.toml .
 
 # setup environment variables
 ENV DB_HOST="host.docker.internal"
-ENV DB_PORT=5432
+ENV DB_PORT=3432
 ENV DB_USER="postgres"
 ENV DB_PASSWORD="password"
 ENV DB_NAME="go_test"
