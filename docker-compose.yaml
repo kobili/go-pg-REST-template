@@ -29,6 +29,7 @@ services:
       dockerfile: ../docker/dev/Dockerfile
     ports:
       - 4321:4321
+      - 2345:2345
     environment:
       - DB_HOST=postgres
       - DB_PORT=5432
