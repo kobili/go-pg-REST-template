@@ -32,7 +32,7 @@ func main() {
 		r.Get("/{userId}", RetrieveUserHandler(mongoClient))
 		r.Post("/", CreateUserHandler(mongoClient))
 		r.Patch("/{userId}", UpdateUserHandler(mongoClient))
-		// r.Delete("/{userId}", DeleteUserHandler(pg))
+		r.Delete("/{userId}", DeleteUserHandler(mongoClient))
 	})
 
 	serverPort := os.Getenv("SERVER_PORT")

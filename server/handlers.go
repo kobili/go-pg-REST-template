@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -139,11 +138,11 @@ func UpdateUserHandler(client *mongo.Client) http.HandlerFunc {
 	return http.HandlerFunc(fn)
 }
 
-func DeleteUserHandler(sqlDB *sql.DB) http.HandlerFunc {
+func DeleteUserHandler(client *mongo.Client) http.HandlerFunc {
 	fn := func(w http.ResponseWriter, req *http.Request) {
 		userId := chi.URLParam(req, "userId")
 
-		db.DeleteUser(sqlDB, req.Context(), userId)
+		db.DeleteUser(client, req.Context(), userId)
 
 		w.WriteHeader(http.StatusNoContent)
 	}

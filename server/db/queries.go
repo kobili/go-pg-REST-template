@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -126,15 +125,17 @@ func UpdateUser(mongoClient *mongo.Client, ctx context.Context, userId string, d
 	}, nil
 }
 
-func DeleteUser(db *sql.DB, ctx context.Context, userId string) error {
-	_, err := db.ExecContext(
-		ctx,
-		`DELETE FROM users WHERE user_id = $1`,
-		userId,
-	)
+func DeleteUser(client *mongo.Client, ctx context.Context, userId string) error {
+	coll := getUserCollection(*client)
+
+	objectId, err := primitive.ObjectIDFromHex(userId)
 	if err != nil {
-		return fmt.Errorf("DeleteUser - Could not delete user: %w", err)
+		return fmt.Errorf("failed to parse userId %s. Expected a hex value: %w", userId, err)
 	}
+
+	filter := bson.D{{Key: "_id", Value: objectId}}
+
+	_, err = coll.DeleteOne(ctx, filter)
 
 	return nil
 }
