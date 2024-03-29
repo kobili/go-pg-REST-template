@@ -20,6 +20,24 @@ services:
     networks:
       - go-server
 
+  mongo:
+    image: mongodb/mongodb-community-server:6.0.6-ubi8
+    ports:
+      - 27018:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=nosubjects_config
+    volumes:
+      - ./mongoData:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/nosubjects_config --quiet
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - go-server
+
   go-app:
     depends_on:
       postgres:
