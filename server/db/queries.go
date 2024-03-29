@@ -10,9 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-const MONGO_DB_NAME = "Go_REST"
-const MONGO_COLLECTION_USER = "users"
-
 type UserEntity struct {
 	UserId    string
 	Email     string
@@ -30,7 +27,7 @@ type UserDetail struct {
 }
 
 func GetUsers(mongoClient *mongo.Client, ctx context.Context) ([]UserDetail, error) {
-	coll := mongoClient.Database(MONGO_DB_NAME).Collection(MONGO_COLLECTION_USER)
+	coll := getUserCollection(*mongoClient)
 
 	cursor, err := coll.Find(ctx, bson.D{})
 	if err != nil {
@@ -46,7 +43,7 @@ func GetUsers(mongoClient *mongo.Client, ctx context.Context) ([]UserDetail, err
 }
 
 func GetUserById(mongoClient *mongo.Client, ctx context.Context, userId string) (*UserDetail, error) {
-	coll := mongoClient.Database(MONGO_DB_NAME).Collection(MONGO_COLLECTION_USER)
+	coll := getUserCollection(*mongoClient)
 
 	objectId, err := primitive.ObjectIDFromHex(userId)
 	if err != nil {
@@ -84,7 +81,7 @@ func (data UpdateUserPayload) toBson() bson.D {
 }
 
 func CreateUser(mongoClient *mongo.Client, ctx context.Context, data UpdateUserPayload) (*UserDetail, error) {
-	coll := mongoClient.Database(MONGO_DB_NAME).Collection(MONGO_COLLECTION_USER)
+	coll := getUserCollection(*mongoClient)
 
 	// TODO: Will need to prevent duplicate emails here
 	insertResult, err := coll.InsertOne(ctx, data)
@@ -107,7 +104,7 @@ func CreateUser(mongoClient *mongo.Client, ctx context.Context, data UpdateUserP
 }
 
 func UpdateUser(mongoClient *mongo.Client, ctx context.Context, userId string, data UpdateUserPayload) (*UserDetail, error) {
-	coll := mongoClient.Database(MONGO_DB_NAME).Collection(MONGO_COLLECTION_USER)
+	coll := getUserCollection(*mongoClient)
 
 	objectId, err := primitive.ObjectIDFromHex(userId)
 	if err != nil {

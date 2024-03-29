@@ -10,6 +10,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+const MONGO_DB_NAME = "Go_REST"
+const MONGO_COLLECTION_USER = "users"
+
 func ConnectToMongoDB() *mongo.Client {
 	uri := os.Getenv("MONGO_DB_URI")
 	if uri == "" {
@@ -24,4 +27,8 @@ func ConnectToMongoDB() *mongo.Client {
 	log.Printf("Successfully connected to MongoDB server")
 
 	return client
+}
+
+func getUserCollection(client mongo.Client) *mongo.Collection {
+	return client.Database(MONGO_DB_NAME).Collection(MONGO_COLLECTION_USER)
 }
