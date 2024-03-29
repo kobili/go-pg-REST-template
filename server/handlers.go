@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -56,26 +55,17 @@ type UserDetail struct {
 	Age       int32  `json:"age"`
 }
 
-func RetrieveUserHandler(sqlDB *sql.DB) http.HandlerFunc {
+func RetrieveUserHandler(client *mongo.Client) http.HandlerFunc {
 	fn := func(w http.ResponseWriter, req *http.Request) {
 		userId := chi.URLParam(req, "userId")
 
-		userEntity, err := db.GetUserById(sqlDB, req.Context(), userId)
+		user, err := db.GetUserById(client, req.Context(), userId)
 		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				http.Error(w, fmt.Sprintf("UserDetailHandler - User info not found: %v", err), 404)
-			} else {
-				http.Error(w, fmt.Sprintf("UserDetailhandler - Failed to retrieve user info: %v", err), 500)
-			}
+			http.Error(w, fmt.Sprintf("UserDetailhandler - Failed to retrieve user info: %v", err), 500)
 			return
 		}
-
-		user := UserDetail{
-			UserId:    userEntity.UserId,
-			Email:     userEntity.Email,
-			FirstName: userEntity.FirstName,
-			LastName:  userEntity.LastName,
-			Age:       userEntity.Age,
+		if user == nil {
+			http.Error(w, fmt.Sprintf("User %s not found.", userId), 404)
 		}
 
 		resBody, err := json.Marshal(user)
@@ -99,18 +89,10 @@ func CreateUserHandler(client *mongo.Client) http.HandlerFunc {
 			return
 		}
 
-		userEntity, err := db.CreateUser(client, req.Context(), reqBody)
+		newUser, err := db.CreateUser(client, req.Context(), reqBody)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("CreateUserHandler - DB error: %v", err), 500)
 			return
-		}
-
-		newUser := UserDetail{
-			UserId:    userEntity.UserId,
-			Email:     userEntity.Email,
-			FirstName: userEntity.FirstName,
-			LastName:  userEntity.LastName,
-			Age:       userEntity.Age,
 		}
 
 		resBody, err := json.Marshal(newUser)

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -21,11 +22,11 @@ type UserEntity struct {
 }
 
 type UserDetail struct {
-	UserId    string
-	Email     string
-	FirstName string
-	LastName  string
-	Age       int32
+	UserId    primitive.ObjectID `json:"userId" bson:"_id"`
+	Email     string             `json:"email" bson:"email"`
+	FirstName string             `json:"firstName" bson:"first_name"`
+	LastName  string             `json:"lastName" bson:"last_name"`
+	Age       int32              `json:"age" bson:"age"`
 }
 
 func GetUsers(db *sql.DB, ctx context.Context) ([]UserEntity, error) {
@@ -50,13 +51,23 @@ func GetUsers(db *sql.DB, ctx context.Context) ([]UserEntity, error) {
 	return users, nil
 }
 
-func GetUserById(db *sql.DB, ctx context.Context, userId string) (*UserEntity, error) {
-	var user UserEntity
-	err := db.QueryRowContext(ctx, "SELECT * FROM users WHERE user_id = $1", userId).Scan(
-		&user.UserId, &user.Email, &user.FirstName, &user.LastName, &user.Age,
-	)
+func GetUserById(mongoClient *mongo.Client, ctx context.Context, userId string) (*UserDetail, error) {
+	coll := mongoClient.Database(MONGO_DB_NAME).Collection(MONGO_COLLECTION_USER)
+
+	objectId, err := primitive.ObjectIDFromHex(userId)
 	if err != nil {
-		return nil, fmt.Errorf("GetUserById(%s): %w", userId, err)
+		return nil, fmt.Errorf("failed to parse userId %s. Expected a hex value: %w", userId, err)
+	}
+
+	var user UserDetail
+	filter := bson.D{{Key: "_id", Value: objectId}}
+
+	err = coll.FindOne(ctx, filter).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to retrieve user with id %s: %w", userId, err)
 	}
 
 	return &user, nil
@@ -81,10 +92,9 @@ func CreateUser(mongoClient *mongo.Client, ctx context.Context, data UpdateUserP
 	if !ok {
 		return nil, fmt.Errorf("mongo InsertOne returned an invalid ObjectID")
 	}
-	userId := documentId.String()
 
 	return &UserDetail{
-		UserId:    userId,
+		UserId:    documentId,
 		Email:     data.Email,
 		FirstName: data.FirstName,
 		LastName:  data.LastName,

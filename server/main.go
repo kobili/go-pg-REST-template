@@ -29,7 +29,7 @@ func main() {
 
 	router.Route("/users", func(r chi.Router) {
 		// r.Get("/", ListUsersHandler(pg))
-		// r.Get("/{userId}", RetrieveUserHandler(pg))
+		r.Get("/{userId}", RetrieveUserHandler(mongoClient))
 		r.Post("/", CreateUserHandler(mongoClient))
 		// r.Patch("/{userId}", UpdateUserHandler(pg))
 		// r.Delete("/{userId}", DeleteUserHandler(pg))
