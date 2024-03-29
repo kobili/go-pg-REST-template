@@ -4,9 +4,23 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
+const MONGO_DB_NAME = "Go_REST"
+const MONGO_COLLECTION_USER = "users"
+
 type UserEntity struct {
+	UserId    string
+	Email     string
+	FirstName string
+	LastName  string
+	Age       int32
+}
+
+type UserDetail struct {
 	UserId    string
 	Email     string
 	FirstName string
@@ -49,25 +63,33 @@ func GetUserById(db *sql.DB, ctx context.Context, userId string) (*UserEntity, e
 }
 
 type UpdateUserPayload struct {
-	Email     string `json:"email"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	Age       int32  `json:"age"`
+	Email     string `json:"email" bson:"email"`
+	FirstName string `json:"firstName" bson:"first_name"`
+	LastName  string `json:"lastName" bson:"last_name"`
+	Age       int32  `json:"age" bson:"age"`
 }
 
-func CreateUser(db *sql.DB, ctx context.Context, data UpdateUserPayload) (*UserEntity, error) {
-	var user UserEntity
-	err := db.QueryRowContext(
-		ctx,
-		`INSERT INTO users (email, first_name, last_name, age)
-		VALUES ($1, $2, $3, $4) RETURNING *`,
-		data.Email, data.FirstName, data.LastName, data.Age,
-	).Scan(&user.UserId, &user.Email, &user.FirstName, &user.LastName, &user.Age)
+func CreateUser(mongoClient *mongo.Client, ctx context.Context, data UpdateUserPayload) (*UserDetail, error) {
+	coll := mongoClient.Database(MONGO_DB_NAME).Collection(MONGO_COLLECTION_USER)
+
+	insertResult, err := coll.InsertOne(ctx, data)
 	if err != nil {
-		return nil, fmt.Errorf("CreateUser - Could not create user: %w", err)
+		return nil, fmt.Errorf("failed to insert user into database: %w", err)
 	}
 
-	return &user, nil
+	documentId, ok := insertResult.InsertedID.(primitive.ObjectID)
+	if !ok {
+		return nil, fmt.Errorf("mongo InsertOne returned an invalid ObjectID")
+	}
+	userId := documentId.String()
+
+	return &UserDetail{
+		UserId:    userId,
+		Email:     data.Email,
+		FirstName: data.FirstName,
+		LastName:  data.LastName,
+		Age:       data.Age,
+	}, nil
 }
 
 func UpdateUser(db *sql.DB, ctx context.Context, userId string, data UpdateUserPayload) (*UserEntity, error) {

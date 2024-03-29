@@ -14,9 +14,6 @@ import (
 
 func main() {
 
-	pg := db.ConnectToDB()
-	defer pg.Close()
-
 	mongoClient := db.ConnectToMongoDB()
 	defer func() {
 		if err := mongoClient.Disconnect(context.Background()); err != nil {
@@ -31,11 +28,11 @@ func main() {
 	})
 
 	router.Route("/users", func(r chi.Router) {
-		r.Get("/", ListUsersHandler(pg))
-		r.Get("/{userId}", RetrieveUserHandler(pg))
-		r.Post("/", CreateUserHandler(pg))
-		r.Patch("/{userId}", UpdateUserHandler(pg))
-		r.Delete("/{userId}", DeleteUserHandler(pg))
+		// r.Get("/", ListUsersHandler(pg))
+		// r.Get("/{userId}", RetrieveUserHandler(pg))
+		r.Post("/", CreateUserHandler(mongoClient))
+		// r.Patch("/{userId}", UpdateUserHandler(pg))
+		// r.Delete("/{userId}", DeleteUserHandler(pg))
 	})
 
 	serverPort := os.Getenv("SERVER_PORT")

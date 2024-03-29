@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"server/db"
 )
@@ -89,7 +90,7 @@ func RetrieveUserHandler(sqlDB *sql.DB) http.HandlerFunc {
 	return http.HandlerFunc(fn)
 }
 
-func CreateUserHandler(sqlDB *sql.DB) http.HandlerFunc {
+func CreateUserHandler(client *mongo.Client) http.HandlerFunc {
 	fn := func(w http.ResponseWriter, req *http.Request) {
 		var reqBody db.UpdateUserPayload
 		err := json.NewDecoder(req.Body).Decode(&reqBody)
@@ -98,7 +99,7 @@ func CreateUserHandler(sqlDB *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		userEntity, err := db.CreateUser(sqlDB, req.Context(), reqBody)
+		userEntity, err := db.CreateUser(client, req.Context(), reqBody)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("CreateUserHandler - DB error: %v", err), 500)
 			return
