@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -12,8 +14,15 @@ import (
 
 func main() {
 
-	db := db.ConnectToDB()
-	defer db.Close()
+	pg := db.ConnectToDB()
+	defer pg.Close()
+
+	mongoClient := db.ConnectToMongoDB()
+	defer func() {
+		if err := mongoClient.Disconnect(context.Background()); err != nil {
+			log.Fatalf("Failed to close MongoDB client: %v", err)
+		}
+	}()
 
 	router := chi.NewRouter()
 
@@ -22,11 +31,11 @@ func main() {
 	})
 
 	router.Route("/users", func(r chi.Router) {
-		r.Get("/", ListUsersHandler(db))
-		r.Get("/{userId}", RetrieveUserHandler(db))
-		r.Post("/", CreateUserHandler(db))
-		r.Patch("/{userId}", UpdateUserHandler(db))
-		r.Delete("/{userId}", DeleteUserHandler(db))
+		r.Get("/", ListUsersHandler(pg))
+		r.Get("/{userId}", RetrieveUserHandler(pg))
+		r.Post("/", CreateUserHandler(pg))
+		r.Patch("/{userId}", UpdateUserHandler(pg))
+		r.Delete("/{userId}", DeleteUserHandler(pg))
 	})
 
 	serverPort := os.Getenv("SERVER_PORT")
