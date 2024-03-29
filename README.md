@@ -1,4 +1,4 @@
-# GO + Postgres + Docker REST API Template
+# GO + MongoDB + Docker REST API Template
 
 A template of a REST API written in Go with a development environment run using Docker.
 
@@ -17,19 +17,5 @@ make start-server
 - The Go server will be run using [air](https://github.com/cosmtrek/air) which automatically restarts the server when code changes are made
 - Server environment variables are located in the `docker-compose.yaml` file.
 
-## Database Migrations
-Database migrations are managed by [Golang-Migrate](https://github.com/golang-migrate/migrate) using docker containers. You may need to configure the Make scripts depending on your Docker network and Postgres configurations defined in the `docker-compose.yaml` file.
-
-### Creating Migrations
-```
-make mm migration_name=
-```
-- Migrations will be created in `migrations/sql`
-### Apply all migrations
-```
-make m
-```
-### Revert a single migration
-```
-make migrate-down
-```
+# Helpful MongoDB Resources
+- [Golang MongoDB Driver Quick Reference](https://www.mongodb.com/docs/drivers/go/current/quick-reference/#std-label-golang-quick-reference)
