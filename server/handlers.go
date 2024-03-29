@@ -7,31 +7,32 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"server/db"
 )
 
 type ReducedUserDetail struct {
-	UserId    string `json:"userId"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
+	UserId    primitive.ObjectID `json:"userId"`
+	FirstName string             `json:"firstName"`
+	LastName  string             `json:"lastName"`
 }
 
-func ListUsersHandler(sqlDB *sql.DB) http.HandlerFunc {
+func ListUsersHandler(client *mongo.Client) http.HandlerFunc {
 	fn := func(w http.ResponseWriter, req *http.Request) {
-		userEntities, err := db.GetUsers(sqlDB, req.Context())
+		userEntities, err := db.GetUsers(client, req.Context())
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
 
 		var users []ReducedUserDetail
-		for _, userEntity := range userEntities {
+		for _, userDetail := range userEntities {
 			user := ReducedUserDetail{
-				UserId:    userEntity.UserId,
-				FirstName: userEntity.FirstName,
-				LastName:  userEntity.LastName,
+				UserId:    userDetail.UserId,
+				FirstName: userDetail.FirstName,
+				LastName:  userDetail.LastName,
 			}
 			users = append(users, user)
 		}

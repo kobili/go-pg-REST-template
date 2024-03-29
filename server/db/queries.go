@@ -29,25 +29,19 @@ type UserDetail struct {
 	Age       int32              `json:"age" bson:"age"`
 }
 
-func GetUsers(db *sql.DB, ctx context.Context) ([]UserEntity, error) {
-	var users []UserEntity
+func GetUsers(mongoClient *mongo.Client, ctx context.Context) ([]UserDetail, error) {
+	coll := mongoClient.Database(MONGO_DB_NAME).Collection(MONGO_COLLECTION_USER)
 
-	rows, err := db.QueryContext(ctx, "SELECT * FROM users")
+	cursor, err := coll.Find(ctx, bson.D{})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error retrieving users: %w", err)
 	}
-	defer rows.Close()
 
-	for rows.Next() {
-		var user UserEntity
-		if err := rows.Scan(&user.UserId, &user.Email, &user.FirstName, &user.LastName, &user.Age); err != nil {
-			return nil, fmt.Errorf("GetUsers: %w", err)
-		}
-		users = append(users, user)
+	var users []UserDetail
+	if err = cursor.All(ctx, &users); err != nil {
+		return nil, fmt.Errorf("error retrieving users: %w", err)
 	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("GetUsers: %v", err)
-	}
+
 	return users, nil
 }
 
@@ -83,6 +77,7 @@ type UpdateUserPayload struct {
 func CreateUser(mongoClient *mongo.Client, ctx context.Context, data UpdateUserPayload) (*UserDetail, error) {
 	coll := mongoClient.Database(MONGO_DB_NAME).Collection(MONGO_COLLECTION_USER)
 
+	// TODO: Will need to prevent duplicate emails here
 	insertResult, err := coll.InsertOne(ctx, data)
 	if err != nil {
 		return nil, fmt.Errorf("failed to insert user into database: %w", err)
