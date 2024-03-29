@@ -11,11 +11,6 @@ RUN go mod download && go mod verify
 COPY . .
 
 # setup environment variables
-ENV DB_HOST="host.docker.internal"
-ENV DB_PORT=5432
-ENV DB_USER="postgres"
-ENV DB_PASSWORD="password"
-ENV DB_NAME="go_test"
 ENV SERVER_PORT=4321
 
 # build the app
