@@ -109,7 +109,7 @@ func CreateUserHandler(client *mongo.Client) http.HandlerFunc {
 	return http.HandlerFunc(fn)
 }
 
-func UpdateUserHandler(sqlDB *sql.DB) http.HandlerFunc {
+func UpdateUserHandler(client *mongo.Client) http.HandlerFunc {
 	fn := func(w http.ResponseWriter, req *http.Request) {
 		userId := chi.URLParam(req, "userId")
 
@@ -120,19 +120,13 @@ func UpdateUserHandler(sqlDB *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		userEntity, err := db.UpdateUser(sqlDB, req.Context(), userId, reqBody)
+		userDetail, err := db.UpdateUser(client, req.Context(), userId, reqBody)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("UpdateUserHandler - DB error: %v", err), 500)
 			return
 		}
 
-		resBody, err := json.Marshal(UserDetail{
-			UserId:    userEntity.UserId,
-			Email:     userEntity.Email,
-			FirstName: userEntity.FirstName,
-			LastName:  userEntity.LastName,
-			Age:       userEntity.Age,
-		})
+		resBody, err := json.Marshal(userDetail)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("UpdateUserHandler - Error marshalling to json: %v", err), 500)
 			return

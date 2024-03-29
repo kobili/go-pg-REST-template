@@ -31,7 +31,7 @@ func main() {
 		r.Get("/", ListUsersHandler(mongoClient))
 		r.Get("/{userId}", RetrieveUserHandler(mongoClient))
 		r.Post("/", CreateUserHandler(mongoClient))
-		// r.Patch("/{userId}", UpdateUserHandler(pg))
+		r.Patch("/{userId}", UpdateUserHandler(mongoClient))
 		// r.Delete("/{userId}", DeleteUserHandler(pg))
 	})
 

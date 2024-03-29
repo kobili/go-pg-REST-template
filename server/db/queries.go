@@ -74,6 +74,15 @@ type UpdateUserPayload struct {
 	Age       int32  `json:"age" bson:"age"`
 }
 
+func (data UpdateUserPayload) toBson() bson.D {
+	return bson.D{
+		{Key: "email", Value: data.Email},
+		{Key: "first_name", Value: data.FirstName},
+		{Key: "last_name", Value: data.LastName},
+		{Key: "age", Value: data.Age},
+	}
+}
+
 func CreateUser(mongoClient *mongo.Client, ctx context.Context, data UpdateUserPayload) (*UserDetail, error) {
 	coll := mongoClient.Database(MONGO_DB_NAME).Collection(MONGO_COLLECTION_USER)
 
@@ -97,24 +106,27 @@ func CreateUser(mongoClient *mongo.Client, ctx context.Context, data UpdateUserP
 	}, nil
 }
 
-func UpdateUser(db *sql.DB, ctx context.Context, userId string, data UpdateUserPayload) (*UserEntity, error) {
-	var user UserEntity
-	err := db.QueryRowContext(
-		ctx,
-		`UPDATE users
-		SET email = $1,
-			first_name = $2,
-			last_name = $3,
-			age = $4
-		WHERE user_id = $5
-		RETURNING *`,
-		data.Email, data.FirstName, data.LastName, data.Age, userId,
-	).Scan(&user.UserId, &user.Email, &user.FirstName, &user.LastName, &user.Age)
+func UpdateUser(mongoClient *mongo.Client, ctx context.Context, userId string, data UpdateUserPayload) (*UserDetail, error) {
+	coll := mongoClient.Database(MONGO_DB_NAME).Collection(MONGO_COLLECTION_USER)
+
+	objectId, err := primitive.ObjectIDFromHex(userId)
 	if err != nil {
-		return nil, fmt.Errorf("UpdateUser - Could not update user: %w", err)
+		return nil, fmt.Errorf("failed to parse userId %s. Expected a hex value: %w", userId, err)
 	}
 
-	return &user, nil
+	filter := bson.D{{Key: "_id", Value: objectId}}
+	_, err = coll.UpdateOne(ctx, filter, bson.D{{Key: "$set", Value: data.toBson()}})
+	if err != nil {
+		return nil, fmt.Errorf("failed to update user %s: %w", userId, err)
+	}
+
+	return &UserDetail{
+		UserId:    objectId,
+		Email:     data.Email,
+		FirstName: data.FirstName,
+		LastName:  data.LastName,
+		Age:       data.Age,
+	}, nil
 }
 
 func DeleteUser(db *sql.DB, ctx context.Context, userId string) error {
