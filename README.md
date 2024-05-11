@@ -1,8 +1,6 @@
-Check out the other branches for a MongoDB template.
+# React/GO + Docker REST API Template
 
-# GO + Docker REST API Template
-
-A template of a REST API written in Go with a development environment run using Docker.
+A template of a React App statically served by a Go backend + API with a development environment run using Docker.
 
 ## Requirements:
 - [Docker](https://www.docker.com/products/docker-desktop/)
