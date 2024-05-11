@@ -42,6 +42,14 @@ services:
     networks:
       - go-server
 
+  vitebuild:
+    build:
+      context: ./
+      dockerfile: ./docker/vitebuild/Dockerfile
+    volumes:
+      - ./frontend/src:/app/frontend/src
+      - ./server/static:/app/dist
+
 networks:
   go-server:
     driver: bridge

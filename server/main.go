@@ -4,11 +4,39 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"regexp"
 
 	"github.com/go-chi/chi/v5"
 
 	"server/db"
 )
+
+/*
+Serves a static React Router app. Handles the case where the client refreshes on a URL
+set client side by the React Router Javascript.
+*/
+func serveReactRouterApp(fs http.Handler) http.HandlerFunc {
+	// Regex to check if a string ends in a file extension (.js, .css, etc)
+	fileMatcher := regexp.MustCompile(`\.[a-zA-Z]*$`)
+
+	fn := func(w http.ResponseWriter, req *http.Request) {
+		if req.Method != "GET" {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+
+		if !fileMatcher.MatchString(req.URL.Path) {
+			// if the request is not for a specific file, it is probably a reload on a url set by react router
+			// in this case, just serve the entry point into the react app and let the client side js handle the redirect
+			http.ServeFile(w, req, "./static/index.html")
+		} else {
+			// This is still necessary as the frontend will still expect javascript and css to be served
+			fs.ServeHTTP(w, req)
+		}
+	}
+
+	return http.HandlerFunc(fn)
+}
 
 func main() {
 
@@ -17,16 +45,21 @@ func main() {
 
 	router := chi.NewRouter()
 
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello world"))
-	})
+	fs := http.FileServer(http.Dir("./static"))
+	router.HandleFunc("/*", serveReactRouterApp(fs))
 
-	router.Route("/users", func(r chi.Router) {
-		r.Get("/", ListUsersHandler(db))
-		r.Get("/{userId}", RetrieveUserHandler(db))
-		r.Post("/", CreateUserHandler(db))
-		r.Patch("/{userId}", UpdateUserHandler(db))
-		r.Delete("/{userId}", DeleteUserHandler(db))
+	router.Route("/api", func(r chi.Router) {
+		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("Hello world"))
+		})
+
+		r.Route("/users", func(r chi.Router) {
+			r.Get("/", ListUsersHandler(db))
+			r.Get("/{userId}", RetrieveUserHandler(db))
+			r.Post("/", CreateUserHandler(db))
+			r.Patch("/{userId}", UpdateUserHandler(db))
+			r.Delete("/{userId}", DeleteUserHandler(db))
+		})
 	})
 
 	serverPort := os.Getenv("SERVER_PORT")
