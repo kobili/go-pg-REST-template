@@ -1,6 +1,5 @@
 # ignore the tmp folder created by air
 server/tmp/
-server/static/
 pgData/
 mongoData/
 
