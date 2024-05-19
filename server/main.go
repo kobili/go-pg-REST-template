@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"server/db"
+	"server/handlers"
 )
 
 func main() {
@@ -21,12 +22,12 @@ func main() {
 		w.Write([]byte("Hello world"))
 	})
 
-	router.Route("/users", func(r chi.Router) {
-		r.Get("/", ListUsersHandler(db))
-		r.Get("/{userId}", RetrieveUserHandler(db))
-		r.Post("/", CreateUserHandler(db))
-		r.Patch("/{userId}", UpdateUserHandler(db))
-		r.Delete("/{userId}", DeleteUserHandler(db))
+	router.Route("/api", func(r chi.Router) {
+		r.Get("/users", handlers.ListUsersHandler(db))
+		r.Get("/users/{userId}", handlers.RetrieveUserHandler(db))
+		r.Post("/users", handlers.CreateUserHandler(db))
+		r.Patch("/users/{userId}", handlers.UpdateUserHandler(db))
+		r.Delete("/users/{userId}", handlers.DeleteUserHandler(db))
 	})
 
 	serverPort := os.Getenv("SERVER_PORT")
