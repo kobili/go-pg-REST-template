@@ -48,11 +48,12 @@ func ListUsersHandler(sqlDB *sql.DB) http.HandlerFunc {
 }
 
 type UserDetail struct {
-	UserId    string `json:"userId"`
-	Email     string `json:"email"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	Age       int32  `json:"age"`
+	UserId    string   `json:"userId"`
+	Email     string   `json:"email"`
+	FirstName string   `json:"firstName"`
+	LastName  string   `json:"lastName"`
+	Age       int32    `json:"age"`
+	Aliases   []string `json:"aliases"`
 }
 
 func RetrieveUserHandler(sqlDB *sql.DB) http.HandlerFunc {
@@ -75,6 +76,7 @@ func RetrieveUserHandler(sqlDB *sql.DB) http.HandlerFunc {
 			FirstName: userEntity.FirstName,
 			LastName:  userEntity.LastName,
 			Age:       userEntity.Age,
+			Aliases:   userEntity.Aliases,
 		}
 
 		resBody, err := json.Marshal(user)
@@ -110,6 +112,7 @@ func CreateUserHandler(sqlDB *sql.DB) http.HandlerFunc {
 			FirstName: userEntity.FirstName,
 			LastName:  userEntity.LastName,
 			Age:       userEntity.Age,
+			Aliases:   userEntity.Aliases,
 		}
 
 		resBody, err := json.Marshal(newUser)
@@ -148,6 +151,7 @@ func UpdateUserHandler(sqlDB *sql.DB) http.HandlerFunc {
 			FirstName: userEntity.FirstName,
 			LastName:  userEntity.LastName,
 			Age:       userEntity.Age,
+			Aliases:   userEntity.Aliases,
 		})
 		if err != nil {
 			http.Error(w, fmt.Sprintf("UpdateUserHandler - Error marshalling to json: %v", err), 500)
