@@ -28,7 +28,9 @@ func GetUsers(db *sql.DB, ctx context.Context) ([]UserEntity, error) {
 
 	for rows.Next() {
 		var user UserEntity
-		if err := rows.Scan(&user.UserId, &user.Email, &user.FirstName, &user.LastName, &user.Age, pq.Array(&user.Aliases)); err != nil {
+		if err := rows.Scan(
+			&user.UserId, &user.Email, &user.FirstName, &user.LastName, &user.Age, pq.Array(&user.Aliases),
+		); err != nil {
 			return nil, fmt.Errorf("GetUsers: %w", err)
 		}
 		users = append(users, user)
