@@ -54,11 +54,11 @@ func GetUserById(db *sql.DB, ctx context.Context, userId string) (*UserEntity, e
 }
 
 type UpdateUserPayload struct {
-	Email     string    `json:"email"`
-	FirstName string    `json:"firstName"`
-	LastName  string    `json:"lastName"`
-	Age       int32     `json:"age"`
-	Aliases   *[]string `json:"aliases"`
+	Email     string   `json:"email"`
+	FirstName string   `json:"firstName"`
+	LastName  string   `json:"lastName"`
+	Age       int32    `json:"age"`
+	Aliases   []string `json:"aliases"`
 }
 
 func CreateUser(db *sql.DB, ctx context.Context, data UpdateUserPayload) (*UserEntity, error) {
@@ -67,7 +67,7 @@ func CreateUser(db *sql.DB, ctx context.Context, data UpdateUserPayload) (*UserE
 		ctx,
 		`INSERT INTO users (email, first_name, last_name, age, aliases)
 		VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-		data.Email, data.FirstName, data.LastName, data.Age, data.Aliases,
+		data.Email, data.FirstName, data.LastName, data.Age, pq.Array(data.Aliases),
 	).Scan(&user.UserId, &user.Email, &user.FirstName, &user.LastName, &user.Age, pq.Array(&user.Aliases))
 	if err != nil {
 		return nil, fmt.Errorf("CreateUser - Could not create user: %w", err)
@@ -88,7 +88,7 @@ func UpdateUser(db *sql.DB, ctx context.Context, userId string, data UpdateUserP
 			aliases = $5
 		WHERE user_id = $6
 		RETURNING *`,
-		data.Email, data.FirstName, data.LastName, data.Age, data.Aliases, userId,
+		data.Email, data.FirstName, data.LastName, data.Age, pq.Array(data.Aliases), userId,
 	).Scan(&user.UserId, &user.Email, &user.FirstName, &user.LastName, &user.Age, pq.Array(&user.Aliases))
 	if err != nil {
 		return nil, fmt.Errorf("UpdateUser - Could not update user: %w", err)
