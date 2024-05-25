@@ -81,11 +81,11 @@ func GetUserById(db *sql.DB, ctx context.Context, userId string) (*UserEntity, e
 }
 
 type UpdateUserPayload struct {
-	Email     string   `json:"email"`
-	FirstName string   `json:"firstName"`
-	LastName  string   `json:"lastName"`
-	Age       int32    `json:"age"`
-	Aliases   []string `json:"aliases"`
+	Email     string    `json:"email"`
+	FirstName string    `json:"firstName"`
+	LastName  string    `json:"lastName"`
+	Age       int32     `json:"age"`
+	Aliases   *[]string `json:"aliases"`
 }
 
 func CreateUser(db *sql.DB, ctx context.Context, data UpdateUserPayload) (*UserEntity, error) {
