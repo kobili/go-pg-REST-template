@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5/stdlib"
 
 	"server/utils"
 )
@@ -23,7 +23,7 @@ func ConnectToDB() *sql.DB {
 		host, port, user, password, dbname,
 	)
 
-	db, err := sql.Open("postgres", connectionString)
+	db, err := sql.Open("pgx", connectionString)
 	if err != nil {
 		log.Fatalf("sql.Open: %v", err)
 	}
